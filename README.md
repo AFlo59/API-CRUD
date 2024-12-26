@@ -40,7 +40,7 @@ cd ./API-CRUD
 ```bash
 python -m venv venv
 source venv/bin/activate  # Sur Linux/Mac
-.\\venv\\Scripts\\activate   # Sur Windows
+.\venv\Scripts\activate   # Sur Windows
 ```
 ## Dépendances
 Voir [requirements.txt](requirements.txt).
