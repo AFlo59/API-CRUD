@@ -6,15 +6,20 @@ Cette API permet d'interagir avec la base de données **AdventureWorks** héberg
 - **CRUD** sur les produits (table `Production.Product`).
 - **Authentification** OAuth2 avec JSON Web Tokens (JWT).
 
-## Dépendances
-Voir [requirements.txt](requirements.txt).
-
 ## Installation
 1. Cloner ce dépôt
 2. Créer et activer un virtualenv (facultatif)
 3. Installer les dépendances:
    ```bash
    pip install -r requirements.txt
+   ```
+
+## Utilisation
+1. Configurer les variables d'environnement dans un fichier `.env`.
+2. Lancer l'application :
+   ```bash
+   uvicorn app.main:app --reload
+   ```
 
 
 ```fastapi-adventureworks/
