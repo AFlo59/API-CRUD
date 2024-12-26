@@ -17,3 +17,7 @@ app.include_router(products.router)
 @app.post("/login", tags=["authentication"])
 async def login_user(form_data: OAuth2PasswordRequestForm = Depends()):
     return await login(form_data)
+
+@app.get("/")
+def root():
+    return {"message": "Bienvenue sur mon API FastAPI AdventureWorks"}
