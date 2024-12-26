@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 from app.database import get_session
 from app.models import Product, ProductCreate, ProductRead
-from app.auth.auth import oauth2_scheme, verify_token
+from app.auth.security import oauth2_scheme, verify_token
 
 router = APIRouter(prefix="/products", tags=["Products"])
 

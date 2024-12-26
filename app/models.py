@@ -9,7 +9,6 @@ class ProductBase(SQLModel):
     ListPrice: Optional[float] = None
 
 class Product(ProductBase, table=True):
-    __tablename__ = "Product"
     ProductID: Optional[int] = Field(default=None, primary_key=True)
 
 class ProductCreate(ProductBase):

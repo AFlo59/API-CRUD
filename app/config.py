@@ -1,6 +1,6 @@
-import os
 import secrets
-from pydantic import BaseSettings, ValidationError
+from pydantic_settings import BaseSettings
+from pydantic import ValidationError
 
 class Settings(BaseSettings):
     SECRET_KEY: str = secrets.token_urlsafe(32)
@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     DB_NAME: str
     DB_USER: str
     DB_PASSWORD: str
+    DB_PORT: int = 1433  # Port par défaut
+    ODBC_DRIVER: str = "ODBC Driver 18 for SQL Server"
 
     class Config:
         env_file = ".env"
@@ -18,8 +20,8 @@ class Settings(BaseSettings):
     @property
     def database_url(self) -> str:
         return (
-            f"mssql+pyodbc://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_SERVER}:1433/"
-            f"{self.DB_NAME}?driver=ODBC+Driver+18+for+SQL+Server"
+            f"mssql+pyodbc://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_SERVER}:{self.DB_PORT}/"
+            f"{self.DB_NAME}?driver={self.ODBC_DRIVER.replace(' ', '+')}"
         )
 
 try:

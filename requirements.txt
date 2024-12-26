@@ -4,7 +4,7 @@ sqlmodel
 pyodbc
 python-dotenv
 python-jose[cryptography]
-passlib
-fastapi[all]
 passlib[bcrypt]
+fastapi[all]
 python-multipart
+pydantic-settings

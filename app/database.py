@@ -9,6 +9,9 @@ engine = create_engine(settings.database_url, echo=False)
 logger = logging.getLogger(__name__)
 
 def get_session():
+    """
+    Dépendance FastAPI pour ouvrir une session SQL.
+    """
     try:
         with Session(engine) as session:
             yield session
@@ -17,10 +20,13 @@ def get_session():
         raise
 
 def check_database_connection():
+    """
+    Vérifie la connexion à la base de données.
+    """
     try:
         with Session(engine) as session:
             session.execute("SELECT 1")
-            logger.info("Connexion à la base réussie.")
+            logger.info("Connexion réussie.")
     except Exception as e:
-        logger.error(f"Connexion échouée: {e}")
+        logger.error(f"Échec de connexion: {e}")
         raise ValueError("Échec de connexion.")
