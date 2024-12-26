@@ -1,17 +1,26 @@
 from sqlmodel import create_engine, Session
-from app.config import DB_SERVER, DB_NAME, DB_USER, DB_PASSWORD
+from app.config import settings
+import logging
 
-# Exemple de connexion via pyodbc (ODBC Driver 18)
-DATABASE_URL = (
-    f"mssql+pyodbc://{DB_USER}:{DB_PASSWORD}@{DB_SERVER}:1433/"
-    f"{DB_NAME}?driver=ODBC+Driver+18+for+SQL+Server"
-)
+# Configurer le moteur
+engine = create_engine(settings.database_url, echo=False)
 
-engine = create_engine(DATABASE_URL, echo=False)
+# Logger
+logger = logging.getLogger(__name__)
 
 def get_session():
-    """
-    Dépendance FastAPI : ouvre une session, puis la referme après usage.
-    """
-    with Session(engine) as session:
-        yield session
+    try:
+        with Session(engine) as session:
+            yield session
+    except Exception as e:
+        logger.error(f"Erreur de session: {e}")
+        raise
+
+def check_database_connection():
+    try:
+        with Session(engine) as session:
+            session.execute("SELECT 1")
+            logger.info("Connexion à la base réussie.")
+    except Exception as e:
+        logger.error(f"Connexion échouée: {e}")
+        raise ValueError("Échec de connexion.")

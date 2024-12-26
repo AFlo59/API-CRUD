@@ -5,4 +5,6 @@ pyodbc
 python-dotenv
 python-jose[cryptography]
 passlib
+fastapi[all]
+passlib[bcrypt]
 python-multipart

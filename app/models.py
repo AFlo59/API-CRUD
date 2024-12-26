@@ -1,19 +1,15 @@
-from typing import Optional
 from sqlmodel import SQLModel, Field
+from typing import Optional
 
 class ProductBase(SQLModel):
     Name: str
     ProductNumber: str
     Color: Optional[str] = None
-    StandardCost: float
-    ListPrice: float
-
-    # Parfois, SellStartDate est de type datetime
-    # Pour simplifier, on la laisse en str ou date
-    SellStartDate: Optional[str] = None
+    StandardCost: Optional[float] = None
+    ListPrice: Optional[float] = None
 
 class Product(ProductBase, table=True):
-    __tablename__ = "Product"  # Nom de la table
+    __tablename__ = "Product"
     ProductID: Optional[int] = Field(default=None, primary_key=True)
 
 class ProductCreate(ProductBase):

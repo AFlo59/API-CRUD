@@ -1,13 +1,27 @@
 import os
-from dotenv import load_dotenv
+from pydantic import BaseSettings, ValidationError
 
-load_dotenv()  # Charge les variables du .env
+class Settings(BaseSettings):
+    SECRET_KEY: str
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    DB_SERVER: str
+    DB_NAME: str
+    DB_USER: str
+    DB_PASSWORD: str
 
-DB_SERVER = os.getenv("DB_SERVER")
-DB_NAME = os.getenv("DB_NAME")
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
 
-SECRET_KEY = os.getenv("SECRET_KEY", "CHANGE_THIS")
-ALGORITHM = os.getenv("ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
+    @property
+    def database_url(self) -> str:
+        return (
+            f"mssql+pyodbc://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_SERVER}:1433/"
+            f"{self.DB_NAME}?driver=ODBC+Driver+18+for+SQL+Server"
+        )
+
+try:
+    settings = Settings()
+except ValidationError as e:
+    raise ValueError(f"Configuration invalid: {e}")
