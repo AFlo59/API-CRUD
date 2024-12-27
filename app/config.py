@@ -14,8 +14,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 class Settings:
     # JWT Config
     SECRET_KEY = os.getenv("SECRET_KEY")
-    ALGORITHM = os.getenv("ALGORITHM", "HS256")
-    ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
+    ALGORITHM = os.getenv("ALGORITHM")
+    ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
     # Configuration de la base de données
     DB_SERVER = os.getenv("DB_SERVER")
@@ -26,8 +26,8 @@ class Settings:
     ODBC_DRIVER = os.getenv("ODBC_DRIVER", "ODBC Driver 18 for SQL Server")
 
     # Authentification
-    USERNAME = os.getenv("USERNAME", "Admin")
-    PASSWORD = os.getenv("PASSWORD", "Admin")
+    USERNAME = os.getenv("USERNAME")
+    PASSWORD = os.getenv("PASSWORD")
     HASHED_PASSWORD = os.getenv("HASHED_PASSWORD")
 
     def __init__(self):
