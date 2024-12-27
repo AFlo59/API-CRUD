@@ -84,6 +84,7 @@ api-crud/
 │   ├── models.py            # Définition des modèles SQL
 │   ├── auth/
 │   │   ├── __init__.py
+│   │   ├── temp_hash.py     # Genere un hash pour le mot de passe
 │   │   ├── auth.py          # Gestion de l'authentification
 │   │   ├── security.py      # Gestion des tokens et mots de passe
 │   ├── routers/

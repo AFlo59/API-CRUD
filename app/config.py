@@ -1,30 +1,40 @@
-import secrets
 from pydantic_settings import BaseSettings
-from pydantic import ValidationError
+from passlib.context import CryptContext
+import os
+import secrets
+from dotenv import load_dotenv
+
+# Charger explicitement le fichier `.env` à la racine
+env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+load_dotenv(dotenv_path=env_path)
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class Settings(BaseSettings):
-    SECRET_KEY: str = secrets.token_urlsafe(32)
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    DB_SERVER: str
-    DB_NAME: str
-    DB_USER: str
-    DB_PASSWORD: str
-    DB_PORT: int = 1433  # Port par défaut
-    ODBC_DRIVER: str = "ODBC Driver 18 for SQL Server"
+    # JWT Config
+    SECRET_KEY: str = os.getenv("SECRET_KEY", secrets.token_urlsafe(32))
+    ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    # Database Config
+    DB_SERVER: str = os.getenv("DB_SERVER")
+    DB_NAME: str = os.getenv("DB_NAME")
+    DB_USER: str = os.getenv("DB_USER")
+    DB_PASSWORD: str = os.getenv("DB_PASSWORD")
+    DB_PORT: int = int(os.getenv("DB_PORT", 1433))
+    ODBC_DRIVER: str = os.getenv("ODBC_DRIVER", "ODBC Driver 18 for SQL Server")
 
-    @property
-    def database_url(self) -> str:
-        return (
-            f"mssql+pyodbc://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_SERVER}:{self.DB_PORT}/"
-            f"{self.DB_NAME}?driver={self.ODBC_DRIVER.replace(' ', '+')}"
-        )
+    # Authentication
+    USERNAME: str = os.getenv("USERNAME", "default_user")
+    PASSWORD: str = os.getenv("PASSWORD", "default_password")
+    HASHED_PASSWORD: str = os.getenv("HASHED_PASSWORD", "")
 
-try:
-    settings = Settings()
-except ValidationError as e:
-    raise ValueError(f"Configuration invalid: {e}")
+    def validate_and_hash_password(self):
+        """
+        Si le mot de passe haché est vide, on le génère à partir du mot de passe en clair.
+        """
+        if not self.HASHED_PASSWORD:
+            self.HASHED_PASSWORD = pwd_context.hash(self.PASSWORD)
+
+settings = Settings()
+settings.validate_and_hash_password()

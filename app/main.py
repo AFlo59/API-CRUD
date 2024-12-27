@@ -1,6 +1,7 @@
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 from app.routers import products
-from app.auth.auth import login
+from app.auth import auth
 
 app = FastAPI(
     title="API CRUD AdventureWorks",
@@ -8,9 +9,19 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Inclusion des routes
 app.include_router(products.router)
+app.include_router(auth.router)
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def root():
-    return {"message": "Bienvenue sur l'API AdventureWorks"}
+    """
+    Page d'accueil avec lien vers la documentation.
+    """
+    return """
+    <html>
+        <body>
+            <h1>Bienvenue sur l'API AdventureWorks</h1>
+            <p><a href="/docs">Documentation</a></p>
+        </body>
+    </html>
+    """
