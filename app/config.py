@@ -1,9 +1,9 @@
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv, set_key
 from passlib.context import CryptContext
 import secrets
 
-# Charger explicitement le fichier `.env`
+# Charger les variables d'environnement
 env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
 load_dotenv(dotenv_path=env_path)
 
@@ -11,7 +11,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class Settings:
     # JWT Config
-    SECRET_KEY = os.getenv("SECRET_KEY", secrets.token_urlsafe(32))  # Génère dynamiquement si vide
+    SECRET_KEY = os.getenv("SECRET_KEY") or secrets.token_urlsafe(32)  # Générée dynamiquement si vide
     ALGORITHM = os.getenv("ALGORITHM", "HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 
@@ -24,21 +24,33 @@ class Settings:
     ODBC_DRIVER = os.getenv("ODBC_DRIVER", "ODBC Driver 18 for SQL Server")
 
     # Authentification
-    USERNAME = os.getenv("USERNAME", "default_user")
-    PASSWORD = os.getenv("PASSWORD", "default_password")
-    HASHED_PASSWORD = os.getenv("HASHED_PASSWORD", "")
+    USERNAME = os.getenv("USERNAME", "Admin")
+    PASSWORD = os.getenv("PASSWORD", "Admin")
+    HASHED_PASSWORD = os.getenv("HASHED_PASSWORD")  # Sera généré dynamiquement si absent
 
     def __init__(self):
         self.validate_environment()
 
     def validate_environment(self):
         """
-        Valide la présence des variables critiques pour l'application.
+        Valide et génère les données nécessaires pour l'application.
         """
         if not self.SECRET_KEY:
-            print(f"INFO: SECRET_KEY générée dynamiquement : {self.SECRET_KEY}")
-        if not self.DB_SERVER or not self.DB_NAME or not self.DB_USER or not self.DB_PASSWORD:
-            raise ValueError("Les paramètres de connexion à la base de données ne sont pas définis dans .env")
+            print(f"INFO: Génération d'une nouvelle SECRET_KEY")
+            set_key(env_path, "SECRET_KEY", self.SECRET_KEY)
+
+        if not self.HASHED_PASSWORD:
+            try:
+                print("INFO: Génération dynamique du hash du mot de passe.")
+                hashed_password = pwd_context.hash(self.PASSWORD)
+                set_key(env_path, "HASHED_PASSWORD", hashed_password)
+                self.HASHED_PASSWORD = hashed_password
+            except Exception as e:
+                raise RuntimeError(f"Erreur lors de la génération du hash du mot de passe : {str(e)}")
+            
+
+        if not all([self.DB_SERVER, self.DB_NAME, self.DB_USER, self.DB_PASSWORD]):
+            raise ValueError("Les paramètres de connexion à la base de données sont manquants.")
 
     @property
     def database_url(self):
@@ -50,13 +62,5 @@ class Settings:
             f"{self.DB_NAME}?driver={self.ODBC_DRIVER.replace(' ', '+')}"
         )
 
-    def validate_and_hash_password(self):
-        """
-        Si le mot de passe haché est vide, on le génère à partir du mot de passe en clair.
-        """
-        if not self.HASHED_PASSWORD:
-            self.HASHED_PASSWORD = pwd_context.hash(self.PASSWORD)
-
-# Créer une instance des paramètres
+# Instanciation des paramètres
 settings = Settings()
-settings.validate_and_hash_password()
