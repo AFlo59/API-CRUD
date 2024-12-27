@@ -13,20 +13,26 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def authenticate_user(username: str, password: str) -> bool:
     """
-    Authentifie l'utilisateur en vérifiant le nom d'utilisateur et le mot de passe.
+    Authentifie l'utilisateur en vérifiant le nom d'utilisateur et le mot de passe à partir des variables d'environnement.
     """
-    print(f"DEBUG: USERNAME attendu : {settings.USERNAME}, reçu : {username}")
+    print(f"DEBUG: USERNAME attendu (depuis .env) : {settings.USERNAME}")
+    print(f"DEBUG: Nom d'utilisateur reçu : {username}")
+
+    # Vérification du nom d'utilisateur
     if username != settings.USERNAME:
         print("Échec d'authentification : utilisateur non valide")
         return False
 
-    print(f"DEBUG: Mot de passe en clair reçu : {password}")
+    # Vérification du mot de passe
+    print(f"DEBUG: Mot de passe reçu : {password}")
     if not verify_password(password, settings.HASHED_PASSWORD):
         print("Échec d'authentification : mot de passe incorrect")
         return False
 
     print("Authentification réussie")
     return True
+
+
 
 
 def create_access_token(data: dict, expires_delta: timedelta = None) -> str:

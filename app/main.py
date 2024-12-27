@@ -38,5 +38,5 @@ async def read_root():
     """
 
 # Inclusion des routes
-app.include_router(auth_router)  # Route pour l'authentification
+app.include_router(auth_router, tags=["Authentification"])  # Route pour l'authentification
 app.include_router(products.router, prefix="/products", tags=["Produits"])
