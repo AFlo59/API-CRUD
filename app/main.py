@@ -32,7 +32,7 @@ async def read_root():
         </head>
         <body>
             <h1>Bienvenue sur l'API CRUD avec authentification !</h1>
-            <p><a href="/docs" target="_blank" style="text-decoration: none; color: blue;">Consultez la documentation ici</a></p>
+            <p><a href="/docs" target="_blank" style="text-decoration: none; color: blue;"> ici</a></p>
         </body>
     </html>
     """
