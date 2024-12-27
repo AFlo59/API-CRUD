@@ -23,18 +23,9 @@ def hash_password(plain_password: str) -> str:
         raise ValueError(f"Une erreur est survenue lors du hachage du mot de passe : {str(e)}")
 
 if __name__ == "__main__":
-    # Exemple de mot de passe à hacher
-    plain_password = os.getenv("PLAIN_PASSWORD", "password")  
-
-    if not plain_password:
-        raise ValueError("Le mot de passe à hacher n'est pas défini dans les variables d'environnement.")
-
+    plain_password = os.getenv("PASSWORD", "Admin")  # Utilise le mot de passe du fichier .env
     hashed_password = hash_password(plain_password)
-    print(f"Nouveau hachage généré : {hashed_password}")
-
-    if __name__ == "__main__":
-    plain_password = os.getenv("PASSWORD", "password")
-    hashed_password = hash_password(plain_password)
+    
     print(f"Mot de passe en clair : {plain_password}")
     print(f"Hachage généré : {hashed_password}")
-    print("Vérification du hachage :", verify_password(plain_password, hashed_password))
+    print(f"Vérification du hachage : {verify_password(plain_password, hashed_password)}")

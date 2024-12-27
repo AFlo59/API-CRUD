@@ -15,7 +15,7 @@ class Settings:
     # JWT Config
     SECRET_KEY = os.getenv("SECRET_KEY")
     ALGORITHM = os.getenv("ALGORITHM", "HS256")
-    ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
+    ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
 
     # Configuration de la base de données
     DB_SERVER = os.getenv("DB_SERVER")
@@ -59,8 +59,9 @@ class Settings:
         """
         return (
             f"mssql+pyodbc://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_SERVER}:{self.DB_PORT}/"
-            f"{self.DB_NAME}?driver={self.ODBC_DRIVER.replace(' ', '+')}"
+            f"{self.DB_NAME}?driver={self.ODBC_DRIVER.replace(' ', '+')}&Encrypt=YES&TrustServerCertificate=YES"
         )
+
 
 # Instanciation des paramètres
 settings = Settings()

@@ -17,6 +17,9 @@ def authenticate_user(username: str, password: str) -> bool:
     """
     print(f"DEBUG: USERNAME attendu (depuis .env) : {settings.USERNAME}")
     print(f"DEBUG: Nom d'utilisateur reçu : {username}")
+    print(f"DEBUG: Mot de passe attendu (en clair) : {settings.PASSWORD}")
+    print(f"DEBUG: Mot de passe reçu : {password}")
+    print(f"DEBUG: HASHED_PASSWORD attendu : {settings.HASHED_PASSWORD}")
 
     # Vérification du nom d'utilisateur
     if username != settings.USERNAME:
@@ -24,13 +27,13 @@ def authenticate_user(username: str, password: str) -> bool:
         return False
 
     # Vérification du mot de passe
-    print(f"DEBUG: Mot de passe reçu : {password}")
     if not verify_password(password, settings.HASHED_PASSWORD):
         print("Échec d'authentification : mot de passe incorrect")
         return False
 
     print("Authentification réussie")
     return True
+
 
 
 
