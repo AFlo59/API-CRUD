@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.routers import products
+from app.routers.auth_routes import router as auth_router
 
 # Création de l'application
 app = FastAPI(
@@ -17,6 +18,17 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Inclusion des routes pour les produits
-app.include_router(products.router, prefix="/products", tags=["Produits"])
+# Route racine
+@app.get("/", tags=["Root"])
+async def read_root():
+    """
+    Page racine avec un message de bienvenue et un lien vers la documentation.
+    """
+    return {
+        "message": "Bienvenue sur l'API CRUD avec authentification !",
+        "documentation_url": "http://127.0.0.1:8000/docs"
+    }
 
+# Inclusion des routes
+app.include_router(auth_router)  # Route pour l'authentification
+app.include_router(products.router, prefix="/products", tags=["Produits"])

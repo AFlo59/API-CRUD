@@ -1,4 +1,3 @@
-import os
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -6,16 +5,15 @@ from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from app.config import settings
 
-# Contexte de hachage
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 def authenticate_user(username: str, password: str) -> bool:
     if username != settings.USERNAME or not verify_password(password, settings.HASHED_PASSWORD):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Identifiants invalides")
+        return False
     return True
 
 def create_access_token(data: dict, expires_delta: timedelta = None) -> str:

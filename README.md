@@ -78,19 +78,22 @@ uvicorn app.main:app --reload
 api-crud/
 ├── app/
 │   ├── __init__.py
-│   ├── main.py              # Entrée principale de l'application
-│   ├── config.py            # Configuration de l'application
-│   ├── database.py          # Connexion à la base de données
-│   ├── models.py            # Définition des modèles SQL
+│   ├── main.py               # Entrée principale de l'application
+│   ├── config.py             # Configuration générale
+│   ├── database.py           # Gestion de la base de données
+│   ├── models.py             # Modèles SQLModel
+│   ├── schemas.py            # Schémas Pydantic
 │   ├── auth/
 │   │   ├── __init__.py
-│   │   ├── temp_hash.py     # Genere un hash pour le mot de passe
-│   │   ├── auth.py          # Gestion de l'authentification
-│   │   ├── security.py      # Gestion des tokens et mots de passe
+│   │   ├── auth.py           # Gestion des tokens et utilisateurs
+│   │   ├── security.py       # Fonctions de hachage et vérification
+│   │   ├── temp_hash.py      # Génération de hachages de test
 │   ├── routers/
 │       ├── __init__.py
-│       ├── products.py      # Routes CRUD pour les produits
-├── .env                     # Fichier d'environnement
-├── requirements.txt         # Dépendances du projet
-├── README.md                # Documentation du projet
+│       ├── products.py       # Routes CRUD pour les produits
+│       ├── auth_routes.py    # Route pour l'authentification
+├── .env                      # Fichier d'environnement
+├── requirements.txt          # Dépendances du projet
+├── README.md                 # Documentation du projet
+
 ```
