@@ -1,10 +1,14 @@
 import pyodbc
+import os
+from dotenv import load_dotenv
+env_path = os.path.join(".env")
+load_dotenv(dotenv_path=env_path, override=True)
 
-server = "adventureworks-server-hdf.database.windows.net"
-database = "FABADI-db"
-username = "jvcb"
-password = "cbjv592023!"
-driver = "ODBC Driver 18 for SQL Server"
+server =  os.getenv("DB_SERVER")
+database = os.getenv("DB_NAME")
+username = os.getenv("DB_USER")
+password = os.getenv("DB_PASSWORD")
+driver = os.getenv("ODBC_DRIVER")
 
 try:
     conn = pyodbc.connect(
