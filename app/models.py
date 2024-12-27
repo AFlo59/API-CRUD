@@ -17,12 +17,13 @@ class ProductBase(SQLModel):
     Weight: Optional[float] = None
     ProductCategoryID: Optional[int] = None
     ProductModelID: Optional[int] = None
-    SellStartDate: datetime = Field(default_factory=datetime)
+    SellStartDate: datetime = Field(default_factory=datetime.utcnow)  # Corrigé
     SellEndDate: Optional[datetime] = None
     DiscontinuedDate: Optional[datetime] = None
     ThumbnailPhotoFileName: Optional[str] = None
     rowguid: uuid.UUID = Field(default_factory=uuid.uuid4)
-    ModifiedDate: datetime = Field(default_factory=datetime)
+    ModifiedDate: datetime = Field(default_factory=datetime.utcnow)  # Corrigé
+
 
 # Modèle pour la catégorie des produits
 class ProductCategory(SQLModel, table=True):
@@ -71,10 +72,20 @@ class Product(ProductBase, table=True):
     Category: Optional[ProductCategory] = Relationship(back_populates="Products")
     Model: Optional[ProductModel] = Relationship(back_populates="Products")
 
-# Modèle pour la création et la mise à jour des produits
 class ProductCreate(ProductBase):
     """
-    Modèle utilisé pour la création de nouveaux produits ou la mise à jour de produits existants.
+    Modèle utilisé pour la création de nouveaux produits.
     """
-    SellStartDate: datetime = Field(default_factory=datetime)
-    ModifiedDate: datetime = Field(default_factory=datetime)
+    Name: str
+    ProductNumber: str
+    Color: Optional[str] = None
+    StandardCost: Optional[float] = None
+    ListPrice: Optional[float] = None
+    Size: Optional[str] = None
+    Weight: Optional[float] = None
+    ProductCategoryID: Optional[int] = None
+    ProductModelID: Optional[int] = None
+    SellStartDate: Optional[datetime] = None
+    SellEndDate: Optional[datetime] = None
+    DiscontinuedDate: Optional[datetime] = None
+    ThumbnailPhotoFileName: Optional[str] = None

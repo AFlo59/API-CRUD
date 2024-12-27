@@ -16,14 +16,22 @@ async def list_products(session: Session = Depends(get_session), user=Depends(ge
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Aucun produit trouvé")
     return products
 
-# Créer un produit
-@router.post("/", response_model=Product, summary="Créer un produit")
-async def create_product(product: ProductCreate, session: Session = Depends(get_session), user=Depends(get_current_user)):
-    new_product = Product.from_orm(product)
-    session.add(new_product)
-    session.commit()
-    session.refresh(new_product)
-    return new_product
+@router.post("/", response_model=Product, tags=["Produits"], summary="Créer un produit")
+async def create_product(product: ProductCreate, session: Session = Depends(get_session)):
+    """
+    Crée un nouveau produit dans la base de données.
+    """
+    try:
+        # Convert ProductCreate to Product
+        new_product = Product(**product.dict(exclude_unset=True))
+        session.add(new_product)
+        session.commit()
+        session.refresh(new_product)
+        return new_product
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la création du produit : {str(e)}")
 
 # Mettre à jour un produit
 @router.put("/{product_id}", response_model=Product, summary="Mettre à jour un produit")
