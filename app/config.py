@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from passlib.context import CryptContext
 import secrets
 
-# Charger explicitement le fichier `.env` à la racine
+# Charger explicitement le fichier `.env`
 env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
 load_dotenv(dotenv_path=env_path)
 
@@ -11,7 +11,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class Settings:
     # JWT Config
-    SECRET_KEY = os.getenv("SECRET_KEY", secrets.token_urlsafe(32))  # Généré dynamiquement si vide
+    SECRET_KEY = os.getenv("SECRET_KEY", secrets.token_urlsafe(32))  # Génère dynamiquement si vide
     ALGORITHM = os.getenv("ALGORITHM", "HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 
@@ -28,13 +28,23 @@ class Settings:
     PASSWORD = os.getenv("PASSWORD", "default_password")
     HASHED_PASSWORD = os.getenv("HASHED_PASSWORD", "")
 
+    def __init__(self):
+        self.validate_environment()
+
+    def validate_environment(self):
+        """
+        Valide la présence des variables critiques pour l'application.
+        """
+        if not self.SECRET_KEY:
+            print(f"INFO: SECRET_KEY générée dynamiquement : {self.SECRET_KEY}")
+        if not self.DB_SERVER or not self.DB_NAME or not self.DB_USER or not self.DB_PASSWORD:
+            raise ValueError("Les paramètres de connexion à la base de données ne sont pas définis dans .env")
+
     @property
     def database_url(self):
         """
         Générer dynamiquement l'URL de connexion à la base de données.
         """
-        if not all([self.DB_SERVER, self.DB_NAME, self.DB_USER, self.DB_PASSWORD]):
-            raise ValueError("Les paramètres de connexion à la base de données ne sont pas définis dans .env")
         return (
             f"mssql+pyodbc://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_SERVER}:{self.DB_PORT}/"
             f"{self.DB_NAME}?driver={self.ODBC_DRIVER.replace(' ', '+')}"

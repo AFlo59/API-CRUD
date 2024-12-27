@@ -1,42 +1,42 @@
+import os
 from passlib.context import CryptContext
-from jose import jwt, JWTError
-from datetime import datetime, timedelta
-from app.config import settings
-from fastapi.security import OAuth2PasswordBearer
-from fastapi import Depends, HTTPException, status
+from dotenv import load_dotenv
 
-# Contexte de hachage
+# Charge explicitement les variables d'environnement
+load_dotenv()
+
+# Crée un contexte pour bcrypt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# Création d'un token JWT
-def create_access_token(data: dict, expires_delta: timedelta = None):
-    """
-    Crée un token JWT valide pour une période donnée.
-    """
-    to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
-
-# Vérification des mots de passe
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
-    Vérifie si un mot de passe clair correspond à un mot de passe haché.
-    """
-    return pwd_context.verify(plain_password, hashed_password)
+    Vérifie si le mot de passe en texte clair correspond au mot de passe haché.
 
-# Vérification des tokens JWT
-def verify_token(token: str):
-    """
-    Vérifie et décode un token JWT.
+    Args:
+        plain_password (str): Mot de passe en texte clair.
+        hashed_password (str): Mot de passe haché à vérifier.
+
+    Returns:
+        bool: True si les mots de passe correspondent, sinon False.
     """
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        return payload
-    except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token invalide",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        return pwd_context.verify(plain_password, hashed_password)
+    except Exception as e:
+        raise ValueError(f"Erreur lors de la vérification du mot de passe : {str(e)}")
+
+if __name__ == "__main__":
+    # Charge le mot de passe haché depuis les variables d'environnement
+    hashed_password = os.getenv("HASHED_PASSWORD")
+    if not hashed_password:
+        raise ValueError("La variable d'environnement HASHED_PASSWORD est manquante.")
+
+    # Mot de passe en clair pour la vérification
+    plain_password = "password"  
+
+    # Affiche les informations
+    print(f"Mot de passe en clair : {plain_password} (longueur : {len(plain_password)})")
+    print(f"Hachage depuis .env : {hashed_password} (longueur : {len(hashed_password)})")
+
+    # Vérifie le mot de passe
+    is_verified = verify_password(plain_password, hashed_password)
+    print(f"Correspondance : {is_verified}")
