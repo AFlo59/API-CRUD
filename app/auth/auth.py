@@ -1,35 +1,55 @@
-from fastapi import HTTPException, status, Depends
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from datetime import timedelta
+from passlib.context import CryptContext
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from jose import jwt, JWTError
+from datetime import datetime, timedelta
+from app.config import settings
 
-from app.auth.security import create_access_token, verify_token
-from app.config import ACCESS_TOKEN_EXPIRE_MINUTES
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
-# Endpoint pour générer un token
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
 
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    # Exemple d'identifiants en dur ("admin"/"admin")
-    if form_data.username == "admin" and form_data.password == "admin":
-        expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        access_token = create_access_token(
-            data={"sub": form_data.username},
-            expires_delta=expires
-        )
-        return {"access_token": access_token, "token_type": "bearer"}
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Bad username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+def authenticate_user(username: str, password: str) -> bool:
+    """
+    Authentifie l'utilisateur en vérifiant le nom d'utilisateur et le mot de passe à partir des variables d'environnement.
+    """
+    print(f"DEBUG: USERNAME attendu (depuis .env) : {settings.USERNAME}")
+    print(f"DEBUG: Nom d'utilisateur reçu : {username}")
+    print(f"DEBUG: Mot de passe attendu (en clair) : {settings.PASSWORD}")
+    print(f"DEBUG: Mot de passe reçu : {password}")
+    print(f"DEBUG: HASHED_PASSWORD attendu : {settings.HASHED_PASSWORD}")
 
-def get_current_user(token: str = Depends(oauth2_scheme)):
-    payload = verify_token(token)
-    if not payload:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    return payload.get("sub")  # Ex: "admin"
+    # Vérification du nom d'utilisateur
+    if username != settings.USERNAME:
+        print("Échec d'authentification : utilisateur non valide")
+        return False
+
+    # Vérification du mot de passe
+    if not verify_password(password, settings.HASHED_PASSWORD):
+        print("Échec d'authentification : mot de passe incorrect")
+        return False
+
+    print("Authentification réussie")
+    return True
+
+
+
+
+
+def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
+    to_encode = data.copy()
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Utilisateur invalide")
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalide ou expiré")
+    return {"username": username}

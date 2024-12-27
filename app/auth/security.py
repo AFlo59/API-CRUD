@@ -1,21 +1,42 @@
-from datetime import datetime, timedelta
-from typing import Optional
-from jose import JWTError, jwt
-from app.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
+import os
+from passlib.context import CryptContext
+from dotenv import load_dotenv
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+# Charge explicitement les variables d'environnement
+load_dotenv()
 
-def verify_token(token: str):
+# Crée un contexte pour bcrypt
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """
+    Vérifie si le mot de passe en texte clair correspond au mot de passe haché.
+
+    Args:
+        plain_password (str): Mot de passe en texte clair.
+        hashed_password (str): Mot de passe haché à vérifier.
+
+    Returns:
+        bool: True si les mots de passe correspondent, sinon False.
+    """
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
-    except JWTError:
-        return None
+        return pwd_context.verify(plain_password, hashed_password)
+    except Exception as e:
+        raise ValueError(f"Erreur lors de la vérification du mot de passe : {str(e)}")
+
+if __name__ == "__main__":
+    # Charge le mot de passe haché depuis les variables d'environnement
+    hashed_password = os.getenv("HASHED_PASSWORD")
+    if not hashed_password:
+        raise ValueError("La variable d'environnement HASHED_PASSWORD est manquante.")
+
+    # Mot de passe en clair pour la vérification
+    plain_password = "password"  
+
+    # Affiche les informations
+    print(f"Mot de passe en clair : {plain_password} (longueur : {len(plain_password)})")
+    print(f"Hachage depuis .env : {hashed_password} (longueur : {len(hashed_password)})")
+
+    # Vérifie le mot de passe
+    is_verified = verify_password(plain_password, hashed_password)
+    print(f"Correspondance : {is_verified}")

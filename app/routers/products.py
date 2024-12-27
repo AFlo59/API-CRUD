@@ -1,96 +1,57 @@
-from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
-
 from app.database import get_session
-from app.models import Product, ProductCreate, ProductRead
+from app.models import Product, ProductCreate
 from app.auth.auth import get_current_user
+from typing import List
 
-router = APIRouter(
-    prefix="/products",
-    tags=["products"]
-)
+router = APIRouter()
 
-@router.get("/", response_model=List[ProductRead])
-def read_products(
-    session: Session = Depends(get_session),
-    current_user: str = Depends(get_current_user)
-):
-    """
-    Lister tous les produits
-    """
+# Lister les produits
+@router.get("/", response_model=List[Product], summary="Lister les produits")
+async def list_products(session: Session = Depends(get_session), user=Depends(get_current_user)):
     statement = select(Product)
     products = session.exec(statement).all()
+    if not products:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Aucun produit trouvé")
     return products
 
-@router.get("/{product_id}", response_model=ProductRead)
-def read_product(
-    product_id: int,
-    session: Session = Depends(get_session),
-    current_user: str = Depends(get_current_user)
-):
+@router.post("/", response_model=Product, tags=["Produits"], summary="Créer un produit")
+async def create_product(product: ProductCreate, session: Session = Depends(get_session)):
     """
-    Récupérer un produit spécifique
+    Crée un nouveau produit dans la base de données.
     """
-    product = session.get(Product, product_id)
-    if not product:
+    try:
+        # Convert ProductCreate to Product
+        new_product = Product(**product.dict(exclude_unset=True))
+        session.add(new_product)
+        session.commit()
+        session.refresh(new_product)
+        return new_product
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la création du produit : {str(e)}")
+
+# Mettre à jour un produit
+@router.put("/{product_id}", response_model=Product, summary="Mettre à jour un produit")
+async def update_product(product_id: int, product: ProductCreate, session: Session = Depends(get_session), user=Depends(get_current_user)):
+    existing_product = session.get(Product, product_id)
+    if not existing_product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Produit non trouvé")
-    return product
-
-@router.post("/", response_model=ProductRead, status_code=status.HTTP_201_CREATED)
-def create_product(
-    product_data: ProductCreate,
-    session: Session = Depends(get_session),
-    current_user: str = Depends(get_current_user)
-):
-    """
-    Créer un nouveau produit
-    """
-    new_product = Product.from_orm(product_data)
-    session.add(new_product)
+    for key, value in product.dict(exclude_unset=True).items():
+        setattr(existing_product, key, value)
+    session.add(existing_product)
     session.commit()
-    session.refresh(new_product)
-    return new_product
+    session.refresh(existing_product)
+    return existing_product
 
-@router.put("/{product_id}", response_model=ProductRead)
-def update_product(
-    product_id: int,
-    product_data: ProductCreate,
-    session: Session = Depends(get_session),
-    current_user: str = Depends(get_current_user)
-):
-    """
-    Mettre à jour un produit
-    """
-    product = session.get(Product, product_id)
-    if not product:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Produit non trouvé")
-
-    # Mise à jour des champs
-    product.Name = product_data.Name
-    product.ProductNumber = product_data.ProductNumber
-    product.Color = product_data.Color
-    product.StandardCost = product_data.StandardCost
-    product.ListPrice = product_data.ListPrice
-    product.SellStartDate = product_data.SellStartDate
-
-    session.add(product)
-    session.commit()
-    session.refresh(product)
-    return product
-
-@router.delete("/{product_id}", status_code=status.HTTP_200_OK)
-def delete_product(
-    product_id: int,
-    session: Session = Depends(get_session),
-    current_user: str = Depends(get_current_user)
-):
-    """
-    Supprimer un produit
-    """
+# Supprimer un produit
+@router.delete("/{product_id}", response_model=dict, summary="Supprimer un produit")
+async def delete_product(product_id: int, session: Session = Depends(get_session), user=Depends(get_current_user)):
     product = session.get(Product, product_id)
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Produit non trouvé")
     session.delete(product)
     session.commit()
-    return {"detail": "Produit supprimé avec succès"}
+    return {"message": f"Produit {product_id} supprimé avec succès"}

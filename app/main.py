@@ -1,23 +1,42 @@
-from fastapi import FastAPI, Depends
-from fastapi.security import OAuth2PasswordRequestForm
-
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 from app.routers import products
-from app.auth.auth import login
+from app.routers.auth_routes import router as auth_router
 
+# Création de l'application
 app = FastAPI(
-    title="AdventureWorks Product API",
-    description="API CRUD pour gérer les produits d'AdventureWorks",
-    version="1.0.0"
+    title="API CRUD avec Authentification",
+    description="""API pour gérer les produits avec un système d'authentification sécurisé basé sur OAuth2 et JWT.
+    ### Fonctionnalités :
+    1. **Authentification** : Génération de tokens pour sécuriser les routes.
+    2. **Gestion des produits** :
+        - Lister les produits.
+        - Consulter un produit spécifique.
+        - Ajouter un produit.
+        - Modifier un produit existant.
+        - Supprimer un produit.
+    """,
+    version="1.0.0",
 )
 
-# Inclusion du router pour les produits
-app.include_router(products.router)
+# Route racine
+@app.get("/", response_class=HTMLResponse, tags=["Root"])
+async def read_root():
+    """
+    Page racine avec un message de bienvenue et un lien vers la documentation.
+    """
+    return """
+    <html>
+        <head>
+            <title>API CRUD</title>
+        </head>
+        <body>
+            <h1>Bienvenue sur l'API CRUD avec authentification !</h1>
+            <p><a href="/docs" target="_blank" style="text-decoration: none; color: blue;"> ici</a></p>
+        </body>
+    </html>
+    """
 
-# Endpoint pour l'authentification
-@app.post("/login", tags=["authentication"])
-async def login_user(form_data: OAuth2PasswordRequestForm = Depends()):
-    return await login(form_data)
-
-@app.get("/")
-def root():
-    return {"message": "Bienvenue sur mon API FastAPI AdventureWorks"}
+# Inclusion des routes
+app.include_router(auth_router, tags=["Authentification"])  # Route pour l'authentification
+app.include_router(products.router, prefix="/products", tags=["Produits"])
