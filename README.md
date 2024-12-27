@@ -54,17 +54,24 @@ pip install -r requirements.txt
    Créez un fichier .env à la racine avec les informations suivantes :
 
 ```
-env
-
+# ----------- Base de données Azure SQL -----------
 DB_SERVER="adventureworks-server-hdf.database.windows.net"
-DB_NAME="adventureworks"
+DB_NAME="FABADI-db"
 DB_USER="jvcb"
 DB_PASSWORD="cbjv592023!"
 DB_PORT=1433
-SECRET_KEY="your_secret_key"  # Peut être générée dynamiquement
-ALGORITHM="HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES=30
 ODBC_DRIVER="ODBC Driver 18 for SQL Server"
+
+# ----------- JWT & Auth -----------
+SECRET_KEY='' # Keep empty
+ALGORITHM="HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+
+# ----------- Authentification Utilisateur -----------
+USERNAME=Admin  # Nom d'utilisateur pour la connexion
+PASSWORD=Admin  # Mot de passe en clair (utilisé pour le hachage si HASHED_PASSWORD est vide)
+HASHED_PASSWORD='' # Keep empty
+
 ```
 ### Lancer l'application :
 
