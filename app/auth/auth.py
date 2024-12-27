@@ -12,9 +12,22 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 def authenticate_user(username: str, password: str) -> bool:
-    if username != settings.USERNAME or not verify_password(password, settings.HASHED_PASSWORD):
+    """
+    Authentifie l'utilisateur en vérifiant le nom d'utilisateur et le mot de passe.
+    """
+    print(f"DEBUG: USERNAME attendu : {settings.USERNAME}, reçu : {username}")
+    if username != settings.USERNAME:
+        print("Échec d'authentification : utilisateur non valide")
         return False
+
+    print(f"DEBUG: Mot de passe en clair reçu : {password}")
+    if not verify_password(password, settings.HASHED_PASSWORD):
+        print("Échec d'authentification : mot de passe incorrect")
+        return False
+
+    print("Authentification réussie")
     return True
+
 
 def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
     to_encode = data.copy()

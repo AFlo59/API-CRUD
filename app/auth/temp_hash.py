@@ -1,5 +1,6 @@
 import os
 from passlib.context import CryptContext
+from auth.auth import verify_password
 
 # Initialisation du contexte de hachage avec bcrypt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -30,3 +31,10 @@ if __name__ == "__main__":
 
     hashed_password = hash_password(plain_password)
     print(f"Nouveau hachage généré : {hashed_password}")
+
+    if __name__ == "__main__":
+    plain_password = os.getenv("PASSWORD", "password")
+    hashed_password = hash_password(plain_password)
+    print(f"Mot de passe en clair : {plain_password}")
+    print(f"Hachage généré : {hashed_password}")
+    print("Vérification du hachage :", verify_password(plain_password, hashed_password))

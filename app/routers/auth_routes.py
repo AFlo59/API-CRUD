@@ -12,6 +12,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     Authentifie l'utilisateur et retourne un token d'accès.
     """
     if not authenticate_user(form_data.username, form_data.password):
+        print("Échec d'authentification dans /token")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Nom d'utilisateur ou mot de passe incorrect",
@@ -21,4 +22,6 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     access_token = create_access_token(
         data={"sub": form_data.username}, expires_delta=access_token_expires
     )
+    print(f"Token généré avec succès pour {form_data.username}")
     return {"access_token": access_token, "token_type": "bearer"}
+
