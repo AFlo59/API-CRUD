@@ -28,4 +28,3 @@ def refresh_env():
     settings.reload_critical_values()
     return {"message": "Variables d'environnement rechargées et mises à jour avec succès."}
 
-
