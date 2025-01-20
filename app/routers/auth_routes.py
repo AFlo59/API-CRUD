@@ -4,7 +4,6 @@ from datetime import timedelta
 from app.auth.auth import authenticate_user, create_access_token
 from app.config import settings, reload_env
 
-# Création de l'instance APIRouter
 router = APIRouter()
 
 @router.post("/token", tags=["Authentification"], summary="Obtenir un token d'accès")
@@ -24,6 +23,9 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 @router.post("/refresh-env", tags=["Administration"], summary="Recharger les variables d'environnement")
 def refresh_env():
-    """Recharge les variables d'environnement dynamiquement."""
+    """Recharge les variables d'environnement dynamiquement et régénère les valeurs critiques."""
     reload_env()
-    return {"message": "Variables d'environnement rechargées avec succès."}
+    settings.reload_critical_values()
+    return {"message": "Variables d'environnement rechargées et mises à jour avec succès."}
+
+

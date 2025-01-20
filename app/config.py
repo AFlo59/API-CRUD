@@ -66,17 +66,24 @@ class Settings:
             print(f"INFO: Nouvelle SECRET_KEY générée : {self.SECRET_KEY}")
 
         # Générer le hash du mot de passe s'il n'existe pas ou est vide
-        if not self.HASHED_PASSWORD or self.HASHED_PASSWORD.strip() == "":
-            self.HASHED_PASSWORD = pwd_context.hash(self.PASSWORD)
-            update_env_file("HASHED_PASSWORD", self.HASHED_PASSWORD)
-            print(f"INFO: Nouveau HASHED_PASSWORD généré : {self.HASHED_PASSWORD}")
-        elif not pwd_context.verify(self.PASSWORD, self.HASHED_PASSWORD):
-            self.HASHED_PASSWORD = pwd_context.hash(self.PASSWORD)
-            update_env_file("HASHED_PASSWORD", self.HASHED_PASSWORD)
-            print("INFO: Nouveau hash généré après modification du mot de passe.")
+        self._update_password_hash()
 
         if not all([self.DB_SERVER, self.DB_NAME, self.DB_USER, self.DB_PASSWORD]):
             raise ValueError("Les paramètres de connexion à la base de données sont manquants.")
+
+    def _update_password_hash(self):
+        """Génère un nouveau hash si le mot de passe a changé ou si le hash est absent."""
+        if not self.HASHED_PASSWORD or not pwd_context.verify(self.PASSWORD, self.HASHED_PASSWORD):
+            self.HASHED_PASSWORD = pwd_context.hash(self.PASSWORD)
+            update_env_file("HASHED_PASSWORD", self.HASHED_PASSWORD)
+            print("INFO: Nouveau HASHED_PASSWORD généré.")
+
+    def reload_critical_values(self):
+        """Recharge les valeurs critiques après mise à jour de l'environnement."""
+        self.USERNAME = os.getenv("USERNAME")
+        self.PASSWORD = os.getenv("PASSWORD")
+        self.HASHED_PASSWORD = os.getenv("HASHED_PASSWORD")
+        self._update_password_hash()
 
     @property
     def database_url(self):
