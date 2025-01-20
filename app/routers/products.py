@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, Query, HTTPException, status
+from fastapi import APIRouter, Depends, Query, HTTPException, status, Form, Request
 from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 from app.database import get_session
 from app.models import Product, ProductCreate
@@ -7,6 +8,7 @@ from app.auth.auth import get_current_user
 from typing import List, Optional
 
 router = APIRouter()
+templates = Jinja2Templates(directory="templates")  # Configurer les templates HTML
 
 # Lister tous les produits
 @router.get("/", response_model=List[Product], summary="Lister les produits")
@@ -21,7 +23,7 @@ async def list_products(session: Session = Depends(get_session), user=Depends(ge
     return products
 
 
-# Créer un produit
+# Créer un produit via API
 @router.post("/", response_model=Product, summary="Créer un produit")
 async def create_product(product: ProductCreate, session: Session = Depends(get_session)):
     """
@@ -37,6 +39,46 @@ async def create_product(product: ProductCreate, session: Session = Depends(get_
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur lors de la création du produit : {str(e)}"
+        )
+
+
+# Formulaire pour créer un produit
+@router.get("/create", response_class=HTMLResponse, summary="Créer un produit via formulaire")
+async def create_product_form(request: Request):
+    """
+    Affiche un formulaire HTML pour créer un produit.
+    """
+    return templates.TemplateResponse("create_product.html", {"request": request})
+
+
+# Créer un produit via formulaire HTML
+@router.post("/create", response_class=HTMLResponse, summary="Créer un produit via formulaire")
+async def create_product_via_form(
+    request: Request, 
+    name: str = Form(...), 
+    product_number: str = Form(...), 
+    color: Optional[str] = Form(None), 
+    list_price: Optional[float] = Form(None),
+    session: Session = Depends(get_session)
+):
+    """
+    Crée un produit via un formulaire HTML.
+    """
+    try:
+        new_product = Product(
+            Name=name,
+            ProductNumber=product_number,
+            Color=color,
+            ListPrice=list_price
+        )
+        session.add(new_product)
+        session.commit()
+        session.refresh(new_product)
+        return HTMLResponse(f"<h1>Produit '{new_product.Name}' créé avec succès !</h1>")
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la création via formulaire : {str(e)}"
         )
 
 
@@ -115,3 +157,12 @@ async def search_products(
         )
 
     return products
+
+
+# Formulaire HTML pour rechercher un produit
+@router.get("/search/form", response_class=HTMLResponse, summary="Formulaire de recherche de produits")
+async def search_product_form(request: Request):
+    """
+    Affiche un formulaire HTML pour rechercher un produit.
+    """
+    return templates.TemplateResponse("search_product.html", {"request": request})

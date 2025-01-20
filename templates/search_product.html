@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rechercher un Produit</title>
+</head>
+<body>
+    <h1>Rechercher un Produit</h1>
+    <form action="/products/search" method="get">
+        <label for="name">Nom :</label>
+        <input type="text" id="name" name="name"><br><br>
+
+        <label for="color">Couleur :</label>
+        <input type="text" id="color" name="color"><br><br>
+
+        <label for="min_price">Prix Minimum :</label>
+        <input type="number" id="min_price" name="min_price" step="0.01"><br><br>
+
+        <label for="max_price">Prix Maximum :</label>
+        <input type="number" id="max_price" name="max_price" step="0.01"><br><br>
+
+        <button type="submit">Rechercher</button>
+    </form>
+</body>
+</html>

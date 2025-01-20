@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un Produit</title>
+</head>
+<body>
+    <h1>Créer un Produit</h1>
+    <form action="/products/create" method="post">
+        <label for="name">Nom :</label>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="product_number">Numéro du Produit :</label>
+        <input type="text" id="product_number" name="product_number" required><br><br>
+
+        <label for="color">Couleur :</label>
+        <input type="text" id="color" name="color"><br><br>
+
+        <label for="list_price">Prix :</label>
+        <input type="number" id="list_price" name="list_price" step="0.01"><br><br>
+
+        <button type="submit">Créer</button>
+    </form>
+</body>
+</html>

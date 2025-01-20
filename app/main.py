@@ -1,5 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from app.routers import products
 from app.routers.auth_routes import router as auth_router
 
@@ -19,24 +22,22 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Route racine
+# Configurer les templates
+templates_dir = Path(__file__).parent.parent / "templates"
+templates = Jinja2Templates(directory=templates_dir)
+
+# Servir les fichiers statiques (CSS, JS, images)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
 @app.get("/", response_class=HTMLResponse, tags=["Root"])
-async def read_root():
+async def read_root(request: Request):
     """
     Page racine avec un message de bienvenue et un lien vers la documentation.
     """
-    return """
-    <html>
-        <head>
-            <title>API CRUD</title>
-        </head>
-        <body>
-            <h1>Bienvenue sur l'API CRUD avec authentification !</h1>
-            <p><a href="/docs" target="_blank" style="text-decoration: none; color: blue;">Click ici !</a></p>
-        </body>
-    </html>
-    """
+    return templates.TemplateResponse("index.html", {"request": request})
+
 
 # Inclusion des routes
 app.include_router(auth_router, tags=["Authentification"])  # Route pour l'authentification
-app.include_router(products.router, prefix="/products", tags=["Produits"])
+app.include_router(products.router, prefix="/products", tags=["Produits"])  # Route pour les produits
